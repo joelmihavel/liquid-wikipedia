@@ -1,9 +1,5 @@
-import {
-  prepareWithSegments,
-  layoutNextLine,
-  type PreparedTextWithSegments,
-  type LayoutCursor,
-} from '@chenglou/pretext'
+import type { PreparedTextWithSegments, LayoutCursor } from '@chenglou/pretext'
+import { prepareWithSegments, layoutNextLine } from '@chenglou/pretext'
 
 // ── Style ───────────────────────────────────────────────────────────
 const TEXT_COLOR = '#15102E'
@@ -184,13 +180,19 @@ function layoutText(): void {
   const repeatCount = Math.max(1, Math.ceil(5000 / Math.max(bodyBase.length, 1)))
   const bodyStr = Array.from({ length: repeatCount }, () => bodyBase).join(' ')
 
-  if (!titlePrepared || lastTitleFont !== titleFont || lastTitle !== titleStr) {
-    titlePrepared = prepareWithSegments(titleStr, titleFont)
-    lastTitleFont = titleFont; lastTitle = titleStr
-  }
-  if (!bodyPrepared || lastBodyFont !== bodyFont || lastBody !== bodyStr) {
-    bodyPrepared = prepareWithSegments(bodyStr, bodyFont)
-    lastBodyFont = bodyFont; lastBody = bodyStr
+  try {
+    if (!titlePrepared || lastTitleFont !== titleFont || lastTitle !== titleStr) {
+      titlePrepared = prepareWithSegments(titleStr, titleFont)
+      lastTitleFont = titleFont; lastTitle = titleStr
+    }
+    if (!bodyPrepared || lastBodyFont !== bodyFont || lastBody !== bodyStr) {
+      bodyPrepared = prepareWithSegments(bodyStr, bodyFont)
+      lastBodyFont = bodyFont; lastBody = bodyStr
+    }
+  } catch (err) {
+    console.error('Pretext prepare error:', err)
+    dirty = false
+    return
   }
 
   const poly = outline()
@@ -551,9 +553,19 @@ function kick(): void {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-document.fonts.ready.then(async () => {
+async function boot(): Promise<void> {
+  try {
+    await document.fonts.ready
+  } catch {
+    // fonts.ready can fail in some environments, proceed anyway
+  }
   initBlob()
   kick()
   searchInput.value = 'Origami'
   await searchWikipedia('Origami')
+}
+
+boot().catch((err) => {
+  console.error('Boot error:', err)
+  statusEl.textContent = 'Error loading — check console'
 })
