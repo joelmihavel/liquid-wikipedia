@@ -10,6 +10,11 @@ const DASH = [6, 4]
 const HANDLE_R = 5
 const HANDLE_HIT = 14
 
+// ── Shared state (must be declared before any function that uses them) ──
+let dirty = true
+let prevT = 0
+let running = false
+
 // ── Canvas ──────────────────────────────────────────────────────────
 const canvas = document.getElementById('c') as HTMLCanvasElement
 const ctx = canvas.getContext('2d')!
@@ -159,7 +164,6 @@ type AnimLine = {
 }
 
 let animLines: AnimLine[] = []
-let dirty = true
 let titlePrepared: PreparedTextWithSegments | null = null
 let bodyPrepared: PreparedTextWithSegments | null = null
 let lastTitleFont = ''
@@ -523,8 +527,6 @@ btnReset.addEventListener('click', () => { initBlob(); kick() })
 // ═══════════════════════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════════════════════
-
-let prevT = 0, running = false
 
 function frame(now: number): void {
   const dt = Math.min((now - prevT) / 1000, 0.033)
