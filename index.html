@@ -162,6 +162,17 @@
       </div>
     </div>
 
+    <script>
+      // Inline diagnostic — runs before module
+      window.addEventListener('error', function(e) {
+        document.getElementById('status').textContent = 'JS Error: ' + e.message;
+        document.getElementById('article-desc').textContent = e.filename + ':' + e.lineno;
+      });
+      window.addEventListener('unhandledrejection', function(e) {
+        document.getElementById('status').textContent = 'Promise Error: ' + e.reason;
+      });
+      document.getElementById('status').textContent = 'HTML loaded, waiting for module…';
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
