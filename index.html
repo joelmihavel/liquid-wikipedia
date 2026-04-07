@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Liquid Wikipedia</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        margin: 0; height: 100dvh;
+        background: #FCFBF7; color: #15102E;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        display: flex; flex-direction: column; overflow: hidden;
+      }
+
+      .topbar {
+        display: flex; align-items: center; gap: 12px;
+        padding: 12px 20px;
+        border-bottom: 1px solid #E6E6E6;
+        background: #fff; flex-shrink: 0;
+      }
+
+      .topbar .logo {
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 0.1em; text-transform: uppercase;
+        color: #15102E; white-space: nowrap;
+      }
+
+      .search-wrap { flex: 1; max-width: 480px; position: relative; }
+
+      .search-wrap input {
+        width: 100%; padding: 10px 40px 10px 14px;
+        border: 1.5px solid #E6E6E6; border-radius: 1000px;
+        font-family: inherit; font-size: 14px; font-weight: 500;
+        color: #15102E; outline: none; background: #FCFBF7;
+        transition: border-color 150ms;
+      }
+      .search-wrap input:focus { border-color: #008E75; }
+      .search-wrap input::placeholder { color: #B0B0B0; }
+
+      .search-wrap .go-btn {
+        position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+        width: 32px; height: 32px; border-radius: 50%;
+        border: none; background: #008E75; color: #fff;
+        font-size: 16px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background 150ms;
+      }
+      .search-wrap .go-btn:hover { background: #006B59; }
+
+      .topbar .status {
+        font-size: 11px; color: #8C8C8C; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+      }
+
+      .main { display: flex; flex: 1; min-height: 0; }
+      .canvas-wrap { flex: 1; position: relative; min-width: 0; }
+      canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+      .panel {
+        width: 230px; flex-shrink: 0;
+        border-left: 1px solid #E6E6E6; background: #fff;
+        padding: 20px 16px; display: flex; flex-direction: column; gap: 14px;
+        overflow-y: auto;
+      }
+
+      .panel-title {
+        font-size: 11px; font-weight: 700;
+        letter-spacing: 0.1em; text-transform: uppercase; color: #15102E;
+      }
+
+      .hint { font-size: 11px; line-height: 1.55; color: #8C8C8C; }
+      .sep { height: 1px; background: #E6E6E6; }
+      .ctrl { display: flex; flex-direction: column; gap: 5px; }
+
+      .ctrl label {
+        font-size: 12px; font-weight: 600;
+        display: flex; justify-content: space-between;
+      }
+      .ctrl label span {
+        font-weight: 500; color: #8C8C8C; font-size: 11px;
+        font-family: "SF Mono", ui-monospace, monospace;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none; appearance: none;
+        width: 100%; height: 4px; border-radius: 2px;
+        background: #E6E6E6; outline: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+        background: #15102E; cursor: pointer; border: 2px solid #fff;
+        box-shadow: 0 1px 4px rgba(0,0,0,.15);
+      }
+
+      .btn {
+        padding: 10px 16px;
+        border: 2px solid #15102E; border-radius: 1000px;
+        background: #FCFBF7; color: #15102E;
+        font-family: inherit; font-size: 12px; font-weight: 600;
+        cursor: pointer; transition: all 160ms; text-align: center;
+      }
+      .btn:hover { background: #15102E; color: #fff; }
+      .btn:active { transform: scale(.97); }
+
+      .empty-state {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 12px; pointer-events: none;
+      }
+      .empty-state.hidden { display: none; }
+      .empty-state p { font-size: 14px; color: #B0B0B0; font-weight: 500; }
+      .empty-state .arrow { font-size: 24px; color: #D0D0D0; transform: rotate(-30deg); margin-top: -4px; }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="logo">Liquid Wiki</span>
+      <div class="search-wrap">
+        <input type="text" id="search" placeholder="Search Wikipedia… e.g. Black holes, Origami, Jazz" />
+        <button class="go-btn" id="go-btn" title="Search">→</button>
+      </div>
+      <span class="status" id="status"></span>
+    </div>
+
+    <div class="main">
+      <div class="canvas-wrap">
+        <canvas id="c"></canvas>
+        <div class="empty-state" id="empty">
+          <span class="arrow">↖</span>
+          <p>Search for something to fill the shape</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p class="panel-title">Controls</p>
+        <p class="hint">Drag the control points to reshape. Text reflows like liquid inside the new form.</p>
+        <div class="sep"></div>
+        <div class="ctrl">
+          <label>Font Size <span id="v-size">14px</span></label>
+          <input type="range" id="in-size" min="9" max="28" value="14" step="1" />
+        </div>
+        <div class="ctrl">
+          <label>Line Height <span id="v-lh">1.4</span></label>
+          <input type="range" id="in-lh" min="1" max="2.2" value="1.4" step="0.1" />
+        </div>
+        <div class="ctrl">
+          <label>Reflow Speed <span id="v-speed">1.0×</span></label>
+          <input type="range" id="in-speed" min="0.3" max="3" value="1" step="0.1" />
+        </div>
+        <div class="sep"></div>
+        <button class="btn" id="btn-reset">Reset Shape</button>
+        <p class="hint" id="info">Lines: 0 · Chars: 0</p>
+        <div class="sep"></div>
+        <p class="hint" id="article-title" style="font-weight:600; color:#15102E;"></p>
+        <p class="hint" id="article-desc"></p>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
