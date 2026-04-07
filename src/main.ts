@@ -478,10 +478,10 @@ async function searchWikipedia(query: string): Promise<void> {
       const summary = await res.json()
       applyArticle(summary)
     }
-  } catch {
-    statusEl.textContent = 'Not found — try another search'
+  } catch (err) {
+    statusEl.textContent = 'Search error: ' + String(err)
     articleTitle.textContent = ''
-    articleDesc.textContent = ''
+    articleDesc.textContent = String(err)
   }
 }
 
@@ -554,18 +554,25 @@ function kick(): void {
 
 // ═══════════════════════════════════════════════════════════════════
 async function boot(): Promise<void> {
+  statusEl.textContent = 'Loading fonts…'
   try {
     await document.fonts.ready
   } catch {
     // fonts.ready can fail in some environments, proceed anyway
   }
+  statusEl.textContent = 'Initializing shape…'
   initBlob()
   kick()
+  statusEl.textContent = 'Fetching article…'
   searchInput.value = 'Origami'
-  await searchWikipedia('Origami')
+  try {
+    await searchWikipedia('Origami')
+  } catch (err) {
+    statusEl.textContent = 'Fetch failed: ' + String(err)
+  }
 }
 
 boot().catch((err) => {
   console.error('Boot error:', err)
-  statusEl.textContent = 'Error loading — check console'
+  statusEl.textContent = 'Boot error: ' + String(err)
 })
