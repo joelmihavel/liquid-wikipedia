@@ -505,9 +505,15 @@ function applyArticle(data: { title: string; extract: string; description?: stri
 }
 
 searchInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') searchWikipedia(searchInput.value)
+  if (e.key === 'Enter') {
+    searchInput.blur()
+    searchWikipedia(searchInput.value)
+  }
 })
-goBtn.addEventListener('click', () => searchWikipedia(searchInput.value))
+goBtn.addEventListener('click', () => {
+  searchInput.blur()
+  searchWikipedia(searchInput.value)
+})
 
 // ═══════════════════════════════════════════════════════════════════
 // CONTROLS
