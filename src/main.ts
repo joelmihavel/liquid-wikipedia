@@ -8,7 +8,7 @@ const BLOB_FILL = 'rgba(0, 142, 117, 0.04)'
 const HANDLE_FILL = '#CFF0E9'
 const DASH = [6, 4]
 const HANDLE_R = 5
-const HANDLE_HIT = 14
+const HANDLE_HIT = 20 // larger hit target for touch
 
 // ── Shared state (must be declared before any function that uses them) ──
 let dirty = true
@@ -29,7 +29,7 @@ function resize(): void {
   dirty = true
 }
 resize()
-addEventListener('resize', () => { resize(); kick() })
+addEventListener('resize', () => { resize(); initBlob(); kick() })
 
 // ── DOM ─────────────────────────────────────────────────────────────
 const searchInput = document.getElementById('search') as HTMLInputElement
@@ -65,14 +65,16 @@ let cp: V[] = []
 let cachedOutline: V[] | null = null
 
 function initBlob(): void {
-  const pad = 40
-  const left = pad + 20
-  const right = W - pad - 20
-  const top = pad + 10
-  const bottom = H - pad - 10
+  // Responsive padding — tighter on small screens
+  const isMobile = W < 500
+  const pad = isMobile ? 12 : 40
+  const left = pad + (isMobile ? 8 : 20)
+  const right = W - pad - (isMobile ? 8 : 20)
+  const top = pad + (isMobile ? 6 : 10)
+  const bottom = H - pad - (isMobile ? 6 : 10)
   const w = right - left
   const h = bottom - top
-  const r = 18
+  const r = isMobile ? 12 : 18
 
   cp = [
     { x: left,         y: top + r },

@@ -17,9 +17,10 @@
         display: flex; flex-direction: column; overflow: hidden;
       }
 
+      /* ── Top bar ──────────────────────────── */
       .topbar {
-        display: flex; align-items: center; gap: 12px;
-        padding: 12px 20px;
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 16px;
         border-bottom: 1px solid #E6E6E6;
         background: #fff; flex-shrink: 0;
       }
@@ -30,7 +31,7 @@
         color: #15102E; white-space: nowrap;
       }
 
-      .search-wrap { flex: 1; max-width: 480px; position: relative; }
+      .search-wrap { flex: 1; position: relative; min-width: 0; }
 
       .search-wrap input {
         width: 100%; padding: 10px 40px 10px 14px;
@@ -57,14 +58,16 @@
         overflow: hidden; text-overflow: ellipsis; max-width: 200px;
       }
 
+      /* ── Main layout ──────────────────────── */
       .main { display: flex; flex: 1; min-height: 0; }
       .canvas-wrap { flex: 1; position: relative; min-width: 0; }
       canvas { display: block; width: 100%; height: 100%; touch-action: none; }
 
+      /* ── Side panel (desktop) ─────────────── */
       .panel {
-        width: 230px; flex-shrink: 0;
+        width: 220px; flex-shrink: 0;
         border-left: 1px solid #E6E6E6; background: #fff;
-        padding: 20px 16px; display: flex; flex-direction: column; gap: 14px;
+        padding: 16px 14px; display: flex; flex-direction: column; gap: 12px;
         overflow-y: auto;
       }
 
@@ -116,13 +119,71 @@
       .empty-state.hidden { display: none; }
       .empty-state p { font-size: 14px; color: #B0B0B0; font-weight: 500; }
       .empty-state .arrow { font-size: 24px; color: #D0D0D0; transform: rotate(-30deg); margin-top: -4px; }
+
+      /* Toggle button for mobile panel */
+      .panel-toggle {
+        display: none;
+        position: fixed; bottom: 16px; right: 16px; z-index: 20;
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 2px solid #15102E; background: #fff; color: #15102E;
+        font-size: 18px; cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,.12);
+        align-items: center; justify-content: center;
+      }
+
+      /* ── Mobile (< 640px) ─────────────────── */
+      @media (max-width: 640px) {
+        .topbar { padding: 8px 12px; gap: 8px; }
+        .topbar .logo { display: none; }
+        .topbar .status { max-width: 80px; font-size: 10px; }
+
+        .search-wrap input { font-size: 13px; padding: 9px 38px 9px 12px; }
+        .search-wrap .go-btn { width: 28px; height: 28px; font-size: 14px; }
+
+        .main { flex-direction: column; }
+
+        .canvas-wrap { flex: 1; min-height: 0; }
+
+        .panel {
+          width: 100%; flex-shrink: 0;
+          border-left: none; border-top: 1px solid #E6E6E6;
+          flex-direction: row; flex-wrap: wrap;
+          padding: 10px 12px; gap: 10px;
+          overflow-y: visible; overflow-x: auto;
+          max-height: none;
+        }
+
+        .panel-title { display: none; }
+        .panel .hint { display: none; }
+        .panel .sep { display: none; }
+
+        .ctrl {
+          flex-direction: row; align-items: center; gap: 6px;
+          min-width: 0; flex: 1; min-width: 120px;
+        }
+        .ctrl label { font-size: 11px; white-space: nowrap; min-width: 0; }
+        .ctrl label span { font-size: 10px; }
+        .ctrl input[type="range"] { flex: 1; min-width: 60px; }
+
+        .btn { padding: 8px 14px; font-size: 11px; white-space: nowrap; }
+
+        #info { display: none; }
+        #article-title { display: none; }
+        #article-desc { display: none; }
+      }
+
+      /* ── Tablet (641–900px) ───────────────── */
+      @media (min-width: 641px) and (max-width: 900px) {
+        .panel { width: 180px; padding: 14px 12px; gap: 10px; }
+        .topbar .status { max-width: 120px; }
+      }
     </style>
   </head>
   <body>
     <div class="topbar">
       <span class="logo">Liquid Wiki</span>
       <div class="search-wrap">
-        <input type="text" id="search" placeholder="Search Wikipedia… e.g. Black holes, Origami, Jazz" />
+        <input type="text" id="search" placeholder="Search Wikipedia…" />
         <button class="go-btn" id="go-btn" title="Search">→</button>
       </div>
       <span class="status" id="status"></span>
@@ -142,19 +203,19 @@
         <p class="hint">Drag the control points to reshape. Text reflows like liquid inside the new form.</p>
         <div class="sep"></div>
         <div class="ctrl">
-          <label>Font Size <span id="v-size">14px</span></label>
+          <label>Size <span id="v-size">14px</span></label>
           <input type="range" id="in-size" min="9" max="28" value="14" step="1" />
         </div>
         <div class="ctrl">
-          <label>Line Height <span id="v-lh">1.4</span></label>
+          <label>Height <span id="v-lh">1.4</span></label>
           <input type="range" id="in-lh" min="1" max="2.2" value="1.4" step="0.1" />
         </div>
         <div class="ctrl">
-          <label>Reflow Speed <span id="v-speed">1.0×</span></label>
+          <label>Speed <span id="v-speed">1.0×</span></label>
           <input type="range" id="in-speed" min="0.3" max="3" value="1" step="0.1" />
         </div>
         <div class="sep"></div>
-        <button class="btn" id="btn-reset">Reset Shape</button>
+        <button class="btn" id="btn-reset">Reset</button>
         <p class="hint" id="info">Lines: 0 · Chars: 0</p>
         <div class="sep"></div>
         <p class="hint" id="article-title" style="font-weight:600; color:#15102E;"></p>
@@ -163,15 +224,12 @@
     </div>
 
     <script>
-      // Inline diagnostic — runs before module
       window.addEventListener('error', function(e) {
         document.getElementById('status').textContent = 'JS Error: ' + e.message;
-        document.getElementById('article-desc').textContent = e.filename + ':' + e.lineno;
       });
       window.addEventListener('unhandledrejection', function(e) {
         document.getElementById('status').textContent = 'Promise Error: ' + e.reason;
       });
-      document.getElementById('status').textContent = 'HTML loaded, waiting for module…';
     </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
